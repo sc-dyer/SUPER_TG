@@ -1,0 +1,24 @@
+5   33.1            Thickness of successive garnet shells [mue] and size of radius class [mue]
+0.11                   no. of garnets in radius class 1 [grt/ccm] (add a line for each radius class)
+0.11
+0.44
+0.63
+1.66
+2.07
+2.94
+4.30
+5.19
+8.04
+11.56
+14.00
+19.36
+21.15
+24.03
+25.88
+27.29
+27.67
+22.29
+5.14
+
+
+
