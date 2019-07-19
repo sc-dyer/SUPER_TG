@@ -24,7 +24,9 @@ The file is quite flexible in its formatting, just follow four rules.
 
 Compiling:
 In the command line go to the directory where the source code is and type the following commands:
+
 $ make super_tg
+
 $ make clean
 
 
