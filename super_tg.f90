@@ -183,7 +183,7 @@ PROGRAM super_tg
 
             INTEGER, PARAMETER :: PATH_UNIT = 21
             CHARACTER(LEN=*), PARAMETER :: pathFile = "PTt-path.txt", &
-            header = "   Temperature(deg C)           Pressure(bar)               Time(Ma)"
+            header = "   Temperature(deg C)       Pressure(bar)             Time(Ma)"
             REAL(KIND=8), DIMENSION(:),INTENT(IN) :: tPathIn, pPathIn, timeIn
             INTEGER :: ioerr, I
             CHARACTER(LEN=100) :: iomes
