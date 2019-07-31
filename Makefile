@@ -1,6 +1,6 @@
 PLAT = platf-unix
 OBJECTS = activi.o dasave.o dbread.o fsol.o gcalc.o gmini.o hprogs.o prinin.o prtcal.o help.o $(PLAT).o
-COMP90 = gfortran -O2
+COMP90 = ifort -O2
 
 ##COMP90 = ifort -O2 -fbounds-check -Wunused
 ##COMP90 = ifort -g -fbacktrace -ffpe-trap=underflow
