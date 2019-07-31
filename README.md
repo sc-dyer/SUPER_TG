@@ -1,8 +1,8 @@
 **Welcome to SUPER_TG!**
 
-This program was created by Sabastien Dyer on 2019/07/17
+This program was created by Sabastien C. Dyer on 2019/07/17
 If you have any questions or comments please email me at sabastien.dyer@carleton.ca
-The latest version of this program and other programs I develop will be available at www.scdyer.com/software
+The latest version of this program and other programs I develop will be available at www.scdyer.com/software and https://github.com/sc-dyer/SUPER_TG
 This has only been designed to work on UNIX based systems.
 
 
