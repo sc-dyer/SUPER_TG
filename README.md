@@ -37,7 +37,7 @@ The file is quite flexible in its formatting, just follow four rules.
 
 **Compiling:**
 
-In the command line go to the directory where the source code is and type the following commands:
+In the command line go to the directory where the source code is and type the following commands, make sure that you have ifort on the system you are using, or change the make file so that COMP90 = gfortran -O2:
 
 $ make super_tg
 
