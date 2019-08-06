@@ -12,7 +12,7 @@
 
 PROGRAM super_tg
     USE , INTRINSIC :: ISO_FORTRAN_ENV
-    !USE ifport !comment this if using gfortran to compile
+    USE ifport !comment this if using gfortran to compile
     USE theriag_mod
 
     IMPLICIT NONE
