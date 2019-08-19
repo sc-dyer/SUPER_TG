@@ -44,13 +44,26 @@
 !-----
 !******************************
       SUBROUTINE PUST(I001,CH)
-      IMPLICIT NONE
-      CHARACTER*(*) CH
-      INTEGER*4 I001,II
-      CALL LABLA(CH,II)
-      IF (II.EQ.0) II=1
-      WRITE (UNIT=I001,FMT='(A)') CH(1:II)
-      RETURN
+         !Calls labla to find last non-space  then writes to file I001 between the from the beginning of CH to the first space
+         IMPLICIT NONE
+         CHARACTER*(*) CH
+         INTEGER*4 I001,II
+         CALL LABLA(CH,II)
+         IF (II.EQ.0) II=1
+         WRITE (UNIT=I001,FMT='(A)') CH(1:II)
+         RETURN
+      END
+
+      !This is my own change 
+      SUBROUTINE PUST_Buff(buffer,CH)
+         !Calls labla to find last non-space  then writes to buffer between the from the beginning of CH to the first space
+         IMPLICIT NONE
+         CHARACTER*(*) CH, buffer
+         !INTEGER*4 I001,II
+         CALL LABLA(CH,II)
+         IF (II.EQ.0) II=1
+         WRITE (buffer,FMT='(A)') CH(1:II)
+         RETURN
       END
 !-----
 !******************************

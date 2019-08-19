@@ -42,6 +42,8 @@ MODULE theriag_mod
 
       CHARACTER(LEN=:),ALLOCATABLE ::   csd_file, dif_file
       REAL(KIND=8), DIMENSION(:),ALLOCATABLE :: p_list,tem_list,time_list
+      CHARACTER(LEN=1000000) :: frac, bulk, bulktable, bulktherin,  assembl, times !THERIA_G text buffers to wait for output to be written
+      CHARACTER(LEN=100000000),DIMENSION(40) :: garnet_gens !Array of text buffers for the garnet generations
 
       PUBLIC :: run_theriag
 
@@ -414,7 +416,8 @@ MODULE theriag_mod
          WRITE (scr,150) ZEITSTRING(1:I001)
          !WRITE (out,150) ZEITSTRING(1:I001)
      150 FORMAT (/,' exit THERIAK',/,1X,A)
-         END SUBROUTINE run_theriag
+         CALL printBuff
+      END SUBROUTINE run_theriag
    !-----
    !********************************
       SUBROUTINE MANLOOP
@@ -978,18 +981,22 @@ MODULE theriag_mod
          /' Mg:  ',1PE12.5,2X,1PE12.5,2X,1PE12.5, &
          /' Ca:   D(Ca) = D(Fe)/2')
          CLOSE (UNIT=44)
-   !----
+
+   !---- Change these lines for modifying CSD 
          OPEN (UNIT=44,FILE=csd_file,STATUS='OLD')
          READ (44,*) NODIST,RAD0
          IF (NODIST.EQ.0.0D0) NODIST=10.0D0
          IF (RAD0.EQ.0.0D0) RAD0=100.0D0
          NGENTOT=0
+
          DO 310,IG=1,MAXGEN
-         READ (44,*,END=311) NGARCCM(IG)
-         IF (NGARCCM(IG).EQ.0) GOTO 311
-         NGENTOT=IG
+            READ (44,*,END=311) NGARCCM(IG)
+            IF (NGARCCM(IG).EQ.0) GOTO 311
+            NGENTOT=IG
      310 CONTINUE
      311 CONTINUE
+
+
          CLOSE (UNIT=44)
          WRITE (scr,1006)
          !WRITE (out,1006)
@@ -2247,11 +2254,11 @@ MODULE theriag_mod
       BUNA3=' '
       ZTHERIN=' '
       IF (N00X(1).EQ.0) THEN
-      OPEN (UNIT=43,FILE='garnet_bulk.txt',STATUS='UNKNOWN')
-      OPEN (UNIT=45,FILE='garnet_bulktable.txt',STATUS='UNKNOWN')
-      OPEN (UNIT=46,FILE='garnet_bulktherin.txt',STATUS='UNKNOWN')
-      OPEN (UNIT=47,FILE='garnet_times.txt',STATUS='UNKNOWN')
-      WRITE (43,2000)
+      !OPEN (UNIT=43,FILE='garnet_bulk.txt',STATUS='UNKNOWN') !BUNA
+      !OPEN (UNIT=45,FILE='garnet_bulktable.txt',STATUS='UNKNOWN') !BUNA2
+      !OPEN (UNIT=46,FILE='garnet_bulktherin.txt',STATUS='UNKNOWN') !BUNA4
+      !OPEN (UNIT=47,FILE='garnet_times.txt',STATUS='UNKNOWN')
+      WRITE (bulk ,2000)
  2000 FORMAT ('-----------------------------------------------', &
       '-----------------------------------------------', &
       '-----------------'/ &
@@ -2281,9 +2288,9 @@ MODULE theriag_mod
        I1=I1+16
       END DO
       WRITE (UNIT=BUNA4(I1:),FMT='(''  ,assemblage'')')
-      CALL PUST(43,BUNA)
-      CALL PUST(45,BUNA2)
-      CALL PUST(47,BUNA4)
+      CALL PUST_Buff(bulk,BUNA)
+      CALL PUST_Buff(bulktable,BUNA2)
+      CALL PUST_Buff(bulktherin,BUNA4)
 !--
       WRITE (UNIT=BUNA,FMT='(A)') ' initial'
       WRITE (UNIT=BUNA2,FMT='(A)') '-1D-10'
@@ -2316,22 +2323,22 @@ MODULE theriag_mod
 
       END DO
       WRITE (UNIT=BUNA4(I1:),FMT='(''  ,'',I4)') CURASNR
-      CALL PUST(43,BUNA)
-      CALL PUST(45,BUNA2)
+      CALL PUST_Buff(bulk,BUNA)
+      CALL PUST_Buff(bulktable,BUNA2)
       CALL KOLLABIERE(ZTHERIN,J)
       BUNA3='-1.00000000D-10  '//ZTHERIN(1:J)//'    *'
-      CALL PUST(46,BUNA3)
-      CALL PUST(47,BUNA4)
+      CALL PUST_Buff(bulktherin,BUNA3)
+      CALL PUST_Buff(times,BUNA4)
 !----
       ELSE
-      OPEN (UNIT=43,FILE='garnet_bulk.txt',STATUS='OLD', &
-      ACCESS='APPEND')
-      OPEN (UNIT=45,FILE='garnet_bulktable.txt',STATUS='OLD', &
-      ACCESS='APPEND')
-      OPEN (UNIT=46,FILE='garnet_bulktherin.txt',STATUS='OLD', &
-      ACCESS='APPEND')
-      OPEN (UNIT=47,FILE='garnet_times.txt',STATUS='OLD', &
-      ACCESS='APPEND')
+      !OPEN (UNIT=43,FILE='garnet_bulk.txt',STATUS='OLD', &
+      !ACCESS='APPEND')
+      !OPEN (UNIT=45,FILE='garnet_bulktable.txt',STATUS='OLD', &
+      !ACCESS='APPEND')
+      !OPEN (UNIT=46,FILE='garnet_bulktherin.txt',STATUS='OLD', &
+      !ACCESS='APPEND')
+      !OPEN (UNIT=47,FILE='garnet_times.txt',STATUS='OLD', &
+      !ACCESS='APPEND')
 !----
       WRITE (UNIT=BUNA,FMT='(1PE15.8)') TIMTOT
       WRITE (UNIT=BUNA2,FMT='(1PE15.8)') TIMTOT
@@ -2364,68 +2371,70 @@ MODULE theriag_mod
 
       END DO
       WRITE (UNIT=BUNA4(I1:),FMT='(''  ,'',I4)') CURASNR
-      CALL PUST(43,BUNA)
-      CALL PUST(45,BUNA2)
+      CALL PUST_Buff(bulk,BUNA)
+      CALL PUST_Buff(bulktable,BUNA2)
       CALL KOLLABIERE(ZTHERIN,J)
       BUNA3=BUNA2(1:17)//ZTHERIN(1:J)//'    *'
-      CALL PUST(46,BUNA3)
-      CALL PUST(47,BUNA4)
+      CALL PUST_Buff(bulktherin,BUNA3)
+      CALL PUST_Buff(times,BUNA4)
 !----
       END IF
-      CLOSE (UNIT=43)
-      CLOSE (UNIT=45)
-      CLOSE (UNIT=46)
-      CLOSE (UNIT=47)
+      !CLOSE (UNIT=43)
+      !CLOSE (UNIT=45)
+      !CLOSE (UNIT=46)
+      !CLOSE (UNIT=47)
 !=====
 !      WRITE (43,3006) TC,P,(CHEM(I),I=1,NC)
 ! 3006 FORMAT ('1  ',100(2X,1PE15.8))
 !----
       DO 500,IG=1,NGEN
-      WRITE (UNIT=FINA,FMT='(''garnet_gen'',I3.3,''.txt'')') IG
-      CALL LABLA(FINA,I1)
+      !WRITE (UNIT=FINA,FMT='(''garnet_gen'',I3.3,''.txt'')') IG
+      !CALL LABLA(FINA,I1)
+
       WRITE (UNIT=FINA2,FMT='(''garnet_gen'',I3.3,''a.txt'')') IG
       CALL LABLA(FINA2,I2)
+
       IF (N00X(IG).EQ.0) THEN
-      OPEN (UNIT=53,FILE=FINA(1:I1),STATUS='UNKNOWN')
-      OPEN (UNIT=63,FILE=FINA2(1:I2),STATUS='UNKNOWN')
-      WRITE (53,1000)
- 1000 FORMAT ('-----------------------------------------------', &
-      '-----------------------------------------------', &
-      '-----------------'/ &
-      'THERIA_G - Compositional profile of a garnet generation', &
-      ' (see filename) considering chemical fractionation and '/ &
-      'intragranular diffusional relaxation. "tot.time (my)" ', &
-      'is the time that passed by after the first'/ &
-      'garnet shell was grown in the modelled system.'/ &
-      '-----------------------------------------------', &
-      '-----------------------------------------------', &
-      '-----------------'/ &
-      'gen',1X,'shell',2X,'temperature (¡C)',1X,'pressure (bar)', &
-      3X,'tot.time (my)', &
-      4X,'radius (cm)',6X,'X(node) (cm)',5X,'Xmn',14X,'Xfe', &
-      14X,'Xmg',14X,'Xca')
-      WRITE (63,1001)
+      !OPEN (UNIT=53,FILE=FINA(1:I1),STATUS='UNKNOWN')
+      !OPEN (UNIT=63,FILE=FINA2(1:I2),STATUS='UNKNOWN')
+      !WRITE (53,1000)
+ !1000 FORMAT ('-----------------------------------------------', &
+      ! '-----------------------------------------------', &
+      ! '-----------------'/ &
+      ! 'THERIA_G - Compositional profile of a garnet generation', &
+      ! ' (see filename) considering chemical fractionation and '/ &
+      ! 'intragranular diffusional relaxation. "tot.time (my)" ', &
+      ! 'is the time that passed by after the first'/ &
+      ! 'garnet shell was grown in the modelled system.'/ &
+      ! '-----------------------------------------------', &
+      ! '-----------------------------------------------', &
+      ! '-----------------'/ &
+      ! 'gen',1X,'shell',2X,'temperature (¡C)',1X,'pressure (bar)', &
+      ! 3X,'tot.time (my)', &
+      ! 4X,'radius (cm)',6X,'X(node) (cm)',5X,'Xmn',14X,'Xfe', &
+      ! 14X,'Xmg',14X,'Xca')
+      WRITE (garnet_gens(IG),1001)
  1001 FORMAT ('gener',5X,',shell',5X,',T(C)',5X,',P(Bar)', &
       5X,',Time(my)', &
       5X,',radius(cm)',5X,',node(cm)',5X,',x(Mn)',5X,',x(Fe)', &
       5X,',x(Mg)',5X,',x(Ca)',5X,',assemblage')
       N00X(IG)=1
       ELSE
-      OPEN (UNIT=53,FILE=FINA(1:I1),STATUS='OLD',ACCESS='APPEND')
-      OPEN (UNIT=63,FILE=FINA2(1:I2),STATUS='OLD',ACCESS='APPEND')
+      !OPEN (UNIT=53,FILE=FINA(1:I1),STATUS='OLD',ACCESS='APPEND')
+      !OPEN (UNIT=63,FILE=FINA2(1:I2),STATUS='OLD',ACCESS='APPEND')
       END IF
       DO 287,I=1,NNOD(IG)
       FF=XHR(IG,I)+DRVHR(IG,I)/2.0D0
-      WRITE (53,1005) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
-      VFE(IG,I)/100.0D0,VMG(IG,I)/100.0D0,VCA(IG,I)/100.0D0
- 1005 FORMAT (2I4,9(2X,1PE15.8))
-      WRITE (63,1006) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
+      !WRITE (53,1005) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
+      !VFE(IG,I)/100.0D0,VMG(IG,I)/100.0D0,VCA(IG,I)/100.0D0
+ !1005 FORMAT (2I4,9(2X,1PE15.8))
+      WRITE (garnet_gens(IG),1006) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
       VFE(IG,I)/100.0D0,VMG(IG,I)/100.0D0,VCA(IG,I)/100.0D0, &
       LAYASNR(IG,I)
  1006 FORMAT (I4,',',I4,9(2X,',',1PE15.8),' ,',I4)
   287 CONTINUE
-      CLOSE (UNIT=53)
-      CLOSE (UNIT=63)
+      !CLOSE (UNIT=53)
+      !CLOSE (UNIT=63)
   500 CONTINUE
 !=====
 
@@ -2435,6 +2444,43 @@ MODULE theriag_mod
 
       RETURN
       END
+
+      !My own funciton here
+      SUBROUTINE printBuff
+         !Outputs the data in the buffers to the txt files
+         INTEGER, PARAMETER :: ASSEMBL_U = 71, BULK_U = 72, BTAB_U = 73, BTHER = 74, FRAC_U = 75, GENS_U = 75, TIMES_U = 76 
+         CHARACTER(LEN=*), PARAMETER :: ASSEMBL_F = "garnet_assembl.txt", BULK_F = "garnet_bulk.txt", BTAB_F = "garnet_bulktable.txt", &
+         INTEGER :: I
+         CHARACTER(LEN=20) FINA2
+         BTHER_F = "garnet_bulktherin.txt", FRAC_F = "garnet_frac.txt", TIMES_F = "garnet_times.txt"
+         OPEN(UNIT=ASSEMBL_U, FILE=ASSEMBL_F)
+         OPEN(UNIT=BULK_U, FILE=BULK_F)
+         OPEN(UNIT=BTAB_U, FILE=BTAB_F)
+         OPEN(UNIT=BTHER_U, FILE=BTHER_F)
+         OPEN(UNIT=FRAC_U, FILE=FRAC_F)
+         OPEN(UNIT=TIMES_U, FILE=TIMES_F)
+
+         WRITE(UNIT=ASSEMBL_U) assembl
+         WRITE(UNIT=BULK_U) bulk
+         WRITE(UNIT=BTAB_U) bulktable
+         WRITE(UNIT=BTHER_U) bulktherin
+         WRITE(UNIT=FRAC_U) frac
+         WRITE(UNIT=TIMES_U) times
+
+         CLOSE(UNIT=ASSEMBL_U)
+         CLOSE(UNIT=BULK_U)
+         CLOSE(UNIT=BTAB_U)
+         CLOSE(UNIT=BTHER_U)
+         CLOSE(UNIT=FRAC_U)
+         CLOSE(UNIT=TIMES_U)
+         DO I=1,LEN(garnet_gens)
+            WRITE (UNIT=FINA2,FMT='(''garnet_gen'',I3.3,''a.txt'')') I
+            OPEN(UNIT=GENS_U, FILE=FINA2)
+            WRITE(UNIT=GENS_U) garnet_gens(I)
+            CLOSE(UNIT=GENS_U)
+         ENDDO
+
+      END SUBROUTINE printBuff
 !-----
 !******************************
       SUBROUTINE KOLLABIERE(CH,J)
@@ -2523,8 +2569,8 @@ MODULE theriag_mod
 ! 3006 FORMAT ('0  ',100(2X,1PE15.8))
 !=====
       IF (NLAY(1).EQ.1) THEN
-      OPEN (UNIT=54,FILE='garnet_frac.txt',STATUS='UNKNOWN')
-      WRITE (54,1000)
+      !OPEN (UNIT=54,FILE='garnet_frac.txt',STATUS='UNKNOWN')
+      WRITE (frac,1000)
  1000 FORMAT ('-----------------------------------------------', &
       '-----------------------------------------------', &
       '----------------------'/ &
@@ -2540,15 +2586,15 @@ MODULE theriag_mod
       'shell',2X,'temperature (¡C)',1X,'pressure (bar)', &
       3X,'time (my)',8X,'radius (cm)',6X,'Xmn',14X,'Xfe',14X,'Xmg', &
       14X,'Xca',14X,'assemblage')
-      ELSE
-      OPEN (UNIT=54,FILE='garnet_frac.txt',STATUS='OLD',ACCESS='APPEND')
-      END IF
+      !ELSE
+      !OPEN (UNIT=54,FILE='garnet_frac.txt',STATUS='OLD',ACCESS='APPEND')
+      !END IF
       CALL LABLA(CURAS,I1)
-      WRITE (54,1005) NLAY(1),TC,P,TIMTOT,XLAY(1,NLAY(1))/10000, &
+      WRITE (frac,1005) NLAY(1),TC,P,TIMTOT,XLAY(1,NLAY(1))/10000, &
       GARNET(1,1,NLAY(1))/100,GARNET(1,2,NLAY(1))/100, &
       GARNET(1,3,NLAY(1))/100,GARNET(1,4,NLAY(1))/100,CURAS(1:I1)
  1005 FORMAT (I4,8(2X,1PE15.8),3X,A)
-      CLOSE (UNIT=54)
+      !CLOSE (UNIT=54)
 !----
       RETURN
       END
@@ -3192,11 +3238,11 @@ MODULE theriag_mod
         NCURAS=NCURAS+1
         CURASSES(NCURAS)=CURAS
         CURASNR=NCURAS
-        OPEN (UNIT=50,FILE='garnet_assembl.txt',STATUS='UNKNOWN')
+        !OPEN (UNIT=50,FILE='garnet_assembl.txt',STATUS='UNKNOWN')
         DO II=1,NCURAS
-         WRITE (UNIT=50,FMT='(I4,2X,A)') II,CURASSES(II)
+         WRITE (assembl,FMT='(I4,2X,A)') II,CURASSES(II)
         END DO
-        CLOSE (UNIT=50)
+        !CLOSE (UNIT=50)
        ELSE
         CURASNR=I2
        END IF

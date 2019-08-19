@@ -13,16 +13,16 @@ super_tg : super_tg.o theriag_mod.o
 
 activi.o : activi.$(SEX) theriak.cmn files.cmn
 	 $(COMP90) -c activi.$(SEX)
-    
+
 dasave.o : dasave.$(SEX) theriak.cmn
 	$(COMP90) -c dasave.$(SEX)
-    
+
 dbread.o : dbread.$(SEX) theriak.cmn files.cmn
 	$(COMP90) -c dbread.$(SEX)
-    
+
 fsol.o : fsol.$(SEX)
 	$(COMP90) -c fsol.$(SEX)
-    
+
 gcalc.o : gcalc.$(SEX) theriak.cmn
 	$(COMP90) -c gcalc.$(SEX)
 
