@@ -1027,7 +1027,9 @@ MODULE theriag_mod
                TSEG(i) = tem_list(i)
                PSEG(i) = p_list(i)
                TIMSEG(i) = time_list(i)
+               WRITE (scr,1016) TSEG(i),PSEG(i),TIMSEG(i)
             END DO
+
          ELSE
             call shoutf()
             GOTO 999
@@ -2386,9 +2388,9 @@ MODULE theriag_mod
       WRITE (UNIT=FINA2,FMT='(''garnet_gen'',I3.3,''a.txt'')') IG
       CALL LABLA(FINA2,I2)
       IF (N00X(IG).EQ.0) THEN
-      OPEN (UNIT=53,FILE=FINA(1:I1),STATUS='UNKNOWN')
+      !OPEN (UNIT=53,FILE=FINA(1:I1),STATUS='UNKNOWN')
       OPEN (UNIT=63,FILE=FINA2(1:I2),STATUS='UNKNOWN')
-      WRITE (53,1000)
+      !WRITE (53,1000)
  1000 FORMAT ('-----------------------------------------------', &
       '-----------------------------------------------', &
       '-----------------'/ &
@@ -2411,12 +2413,12 @@ MODULE theriag_mod
       5X,',x(Mg)',5X,',x(Ca)',5X,',assemblage')
       N00X(IG)=1
       ELSE
-      OPEN (UNIT=53,FILE=FINA(1:I1),STATUS='OLD',ACCESS='APPEND')
+      !OPEN (UNIT=53,FILE=FINA(1:I1),STATUS='OLD',ACCESS='APPEND')
       OPEN (UNIT=63,FILE=FINA2(1:I2),STATUS='OLD',ACCESS='APPEND')
       END IF
       DO 287,I=1,NNOD(IG)
       FF=XHR(IG,I)+DRVHR(IG,I)/2.0D0
-      WRITE (53,1005) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
+      !WRITE (53,1005) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
       VFE(IG,I)/100.0D0,VMG(IG,I)/100.0D0,VCA(IG,I)/100.0D0
  1005 FORMAT (2I4,9(2X,1PE15.8))
       WRITE (63,1006) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
@@ -2424,7 +2426,7 @@ MODULE theriag_mod
       LAYASNR(IG,I)
  1006 FORMAT (I4,',',I4,9(2X,',',1PE15.8),' ,',I4)
   287 CONTINUE
-      CLOSE (UNIT=53)
+      !CLOSE (UNIT=53)
       CLOSE (UNIT=63)
   500 CONTINUE
 !=====
