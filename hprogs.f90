@@ -57,14 +57,19 @@
       !This is my own change 
       SUBROUTINE PUST_Buff(buffer,CH)
          !Calls labla to find last non-space  then writes to buffer between the from the beginning of CH to the first space
+         !Just realized this is basically the TRIM command, leaving this in just in case there is weirdness
          IMPLICIT NONE
          CHARACTER*(*) CH, buffer
-         !INTEGER*4 I001,II
+         INTEGER*4 II
+         CHARACTER(LEN=1000) :: nextLine
+
          CALL LABLA(CH,II)
          IF (II.EQ.0) II=1
-         WRITE (buffer,FMT='(A)') CH(1:II)
+         WRITE (nextLine,FMT='(A)') CH(1:II)
+         nextLine = TRIM(nextLine)//NEW_LINE('A')
+         buffer = TRIM(buffer)//TRIM(nextLine)
          RETURN
-      END
+      END SUBROUTINE
 !-----
 !******************************
       SUBROUTINE PUSTCOL(I001,CH,COL1,COL2)

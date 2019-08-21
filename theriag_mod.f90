@@ -37,14 +37,13 @@ MODULE theriag_mod
       IMPLICIT NONE
       INCLUDE 'theriak.cmn'
       INCLUDE 'files.cmn'
-
       PRIVATE
 
       CHARACTER(LEN=:),ALLOCATABLE ::   csd_file, dif_file
       REAL(KIND=8), DIMENSION(:),ALLOCATABLE :: p_list,tem_list,time_list
-      CHARACTER(LEN=1000000) :: frac, bulk, bulktable, bulktherin,  assembl, times !THERIA_G text buffers to wait for output to be written
+      CHARACTER(LEN=1000000) :: fracBuff, bulkBuff, bulktableBuff, bulktherinBuff,  assemblBuff, timesBuff !THERIA_G text buffers to wait for output to be written
       CHARACTER(LEN=100000000),DIMENSION(40) :: garnet_gens !Array of text buffers for the garnet generations
-
+      CHARACTER(LEN=100000000) :: tabBuff,tcpBuff
       PUBLIC :: run_theriag
 
       contains
@@ -539,7 +538,7 @@ MODULE theriag_mod
       YWERT(JX)=GGTOT
   550 CONTINUE
 !-----
-      CALL PRTTBL
+      CALL PRTTBL(tabBuff,tcpBuff)
       Y0=YWERT(0)
       Y1=YWERT(NPTS)
       YYMAX=-1D34
@@ -827,7 +826,7 @@ MODULE theriag_mod
 !---
   888 CONTINUE
       CLOSE (UNIT=drv)
-      CALL PRTTBL
+      CALL PRTTBL(tabBuff,tcpBuff)
       RETURN
       END
 !-----
@@ -1034,6 +1033,9 @@ MODULE theriag_mod
                TSEG(i) = tem_list(i)
                PSEG(i) = p_list(i)
                TIMSEG(i) = time_list(i)
+
+               WRITE (scr,1016) TSEG(i),PSEG(i),TIMSEG(i)
+               1016 FORMAT (13X,F10.4,2X,F10.2,2X,F10.5)
             END DO
          ELSE
             call shoutf()
@@ -1756,7 +1758,7 @@ MODULE theriag_mod
       CALL PRTSHORT
       PRTLOG(9)=.FALSE.
       PRTLOG(6)=.FALSE.
-      CALL PRTTBL
+      CALL PRTTBL(tabBuff,tcpBuff)
 !++++
       RETURN
       END
@@ -1830,7 +1832,7 @@ MODULE theriag_mod
       CALL PRTSHORT
       PRTLOG(9)=.FALSE.
       PRTLOG(6)=.FALSE.
-      CALL PRTTBL
+      CALL PRTTBL(tabBuff,tcpBuff)
 !      AS2=CURAS
 !      NG2=VOLGAR
 !-----
@@ -2230,7 +2232,7 @@ MODULE theriag_mod
       CHARACTER*20 FINA,FINA2
       CHARACTER*1000 BUNA,BUNA2,BUNA3,BUNA4,ZTHERIN
 !-----
-
+      CHARACTER(LEN=1000) :: nextLine
 !mar2015
       WRITE(UNIT=6,FMT='(''enter PRTNOD'')')
  !     WRITE(UNIT=10,FMT='(''enter PRTNOD'')')
@@ -2258,17 +2260,6 @@ MODULE theriag_mod
       !OPEN (UNIT=45,FILE='garnet_bulktable.txt',STATUS='UNKNOWN') !BUNA2
       !OPEN (UNIT=46,FILE='garnet_bulktherin.txt',STATUS='UNKNOWN') !BUNA4
       !OPEN (UNIT=47,FILE='garnet_times.txt',STATUS='UNKNOWN')
-      WRITE (bulk ,2000)
- 2000 FORMAT ('-----------------------------------------------', &
-      '-----------------------------------------------', &
-      '-----------------'/ &
-      'THERIA_G - Bulk composition of matrix after fractionation ', &
-      'of garnet and diffusional relaxation. "tot.time (my)" ',/ &
-      'is the time that passed by after the first ', &
-      'garnet shell was grown in the modelled system.'/ &
-      '-----------------------------------------------', &
-      '-----------------------------------------------', &
-      '-----------------')
       WRITE (UNIT=BUNA,FMT='(A)') ' tot.time (my)'
       WRITE (UNIT=BUNA2,FMT='(A)') 'Time(my)'
       WRITE (UNIT=BUNA4,FMT='(A)') 'Time(my)  ,T(C)  ,P(Bar)'
@@ -2288,9 +2279,9 @@ MODULE theriag_mod
        I1=I1+16
       END DO
       WRITE (UNIT=BUNA4(I1:),FMT='(''  ,assemblage'')')
-      CALL PUST_Buff(bulk,BUNA)
-      CALL PUST_Buff(bulktable,BUNA2)
-      CALL PUST_Buff(bulktherin,BUNA4)
+      CALL PUST_Buff(bulkBuff,BUNA)
+      CALL PUST_Buff(bulktableBuff,BUNA2)
+      CALL PUST_Buff(bulktherinBuff,BUNA4)
 !--
       WRITE (UNIT=BUNA,FMT='(A)') ' initial'
       WRITE (UNIT=BUNA2,FMT='(A)') '-1D-10'
@@ -2323,12 +2314,12 @@ MODULE theriag_mod
 
       END DO
       WRITE (UNIT=BUNA4(I1:),FMT='(''  ,'',I4)') CURASNR
-      CALL PUST_Buff(bulk,BUNA)
-      CALL PUST_Buff(bulktable,BUNA2)
+      CALL PUST_Buff(bulkBuff,BUNA)
+      CALL PUST_Buff(bulktableBuff,BUNA2)
       CALL KOLLABIERE(ZTHERIN,J)
       BUNA3='-1.00000000D-10  '//ZTHERIN(1:J)//'    *'
-      CALL PUST_Buff(bulktherin,BUNA3)
-      CALL PUST_Buff(times,BUNA4)
+      CALL PUST_Buff(bulktherinBuff,BUNA3)
+      CALL PUST_Buff(timesBuff,BUNA4)
 !----
       ELSE
       !OPEN (UNIT=43,FILE='garnet_bulk.txt',STATUS='OLD', &
@@ -2371,12 +2362,12 @@ MODULE theriag_mod
 
       END DO
       WRITE (UNIT=BUNA4(I1:),FMT='(''  ,'',I4)') CURASNR
-      CALL PUST_Buff(bulk,BUNA)
-      CALL PUST_Buff(bulktable,BUNA2)
+      CALL PUST_Buff(bulkBuff,BUNA)
+      CALL PUST_Buff(bulktableBuff,BUNA2)
       CALL KOLLABIERE(ZTHERIN,J)
       BUNA3=BUNA2(1:17)//ZTHERIN(1:J)//'    *'
-      CALL PUST_Buff(bulktherin,BUNA3)
-      CALL PUST_Buff(times,BUNA4)
+      CALL PUST_Buff(bulktherinBuff,BUNA3)
+      CALL PUST_Buff(timesBuff,BUNA4)
 !----
       END IF
       !CLOSE (UNIT=43)
@@ -2413,12 +2404,14 @@ MODULE theriag_mod
       ! 3X,'tot.time (my)', &
       ! 4X,'radius (cm)',6X,'X(node) (cm)',5X,'Xmn',14X,'Xfe', &
       ! 14X,'Xmg',14X,'Xca')
-      WRITE (garnet_gens(IG),1001)
+      WRITE (nextLine,1001)
  1001 FORMAT ('gener',5X,',shell',5X,',T(C)',5X,',P(Bar)', &
       5X,',Time(my)', &
       5X,',radius(cm)',5X,',node(cm)',5X,',x(Mn)',5X,',x(Fe)', &
       5X,',x(Mg)',5X,',x(Ca)',5X,',assemblage')
       N00X(IG)=1
+      nextLine = TRIM(nextLine)//NEW_LINE('A')
+      garnet_gens(IG) = nextLine
       ELSE
       !OPEN (UNIT=53,FILE=FINA(1:I1),STATUS='OLD',ACCESS='APPEND')
       !OPEN (UNIT=63,FILE=FINA2(1:I2),STATUS='OLD',ACCESS='APPEND')
@@ -2428,10 +2421,12 @@ MODULE theriag_mod
       !WRITE (53,1005) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
       !VFE(IG,I)/100.0D0,VMG(IG,I)/100.0D0,VCA(IG,I)/100.0D0
  !1005 FORMAT (2I4,9(2X,1PE15.8))
-      WRITE (garnet_gens(IG),1006) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
+      WRITE (nextLine,1006) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
       VFE(IG,I)/100.0D0,VMG(IG,I)/100.0D0,VCA(IG,I)/100.0D0, &
       LAYASNR(IG,I)
  1006 FORMAT (I4,',',I4,9(2X,',',1PE15.8),' ,',I4)
+      nextLine = TRIM(nextLine)//NEW_LINE('A')
+      garnet_gens(IG) = TRIM(garnet_gens(IG))//TRIM(nextLine)
   287 CONTINUE
       !CLOSE (UNIT=53)
       !CLOSE (UNIT=63)
@@ -2448,24 +2443,33 @@ MODULE theriag_mod
       !My own funciton here
       SUBROUTINE printBuff
          !Outputs the data in the buffers to the txt files
-         INTEGER, PARAMETER :: ASSEMBL_U = 71, BULK_U = 72, BTAB_U = 73, BTHER = 74, FRAC_U = 75, GENS_U = 75, TIMES_U = 76 
-         CHARACTER(LEN=*), PARAMETER :: ASSEMBL_F = "garnet_assembl.txt", BULK_F = "garnet_bulk.txt", BTAB_F = "garnet_bulktable.txt", &
+         INTEGER, PARAMETER :: ASSEMBL_U = 71, BULK_U = 72, BTAB_U = 73, BTHER_U = 74, FRAC_U = 75, GENS_U = 75, TIMES_U = 76, &
+            TAB_U = 77, TCP_U = 78 
+         CHARACTER(LEN=*), PARAMETER :: ASSEMBL_F = "garnet_assembl.txt",&
+            BULK_F = "garnet_bulk.txt", BTAB_F = "garnet_bulktable.txt", &
+            BTHER_F = "garnet_bulktherin.txt", FRAC_F = "garnet_frac.txt", &
+            TIMES_F = "garnet_times.txt", TAB_F = "loop_table", &
+            TCP_F = "loop_tecplt"
          INTEGER :: I
          CHARACTER(LEN=20) FINA2
-         BTHER_F = "garnet_bulktherin.txt", FRAC_F = "garnet_frac.txt", TIMES_F = "garnet_times.txt"
+         
          OPEN(UNIT=ASSEMBL_U, FILE=ASSEMBL_F)
          OPEN(UNIT=BULK_U, FILE=BULK_F)
          OPEN(UNIT=BTAB_U, FILE=BTAB_F)
          OPEN(UNIT=BTHER_U, FILE=BTHER_F)
          OPEN(UNIT=FRAC_U, FILE=FRAC_F)
          OPEN(UNIT=TIMES_U, FILE=TIMES_F)
+         OPEN(UNIT=TAB_U, FILE=TAB_F)
+         OPEN(UNIT=TCP_U, FILE=TCP_F)
 
-         WRITE(UNIT=ASSEMBL_U) assembl
-         WRITE(UNIT=BULK_U) bulk
-         WRITE(UNIT=BTAB_U) bulktable
-         WRITE(UNIT=BTHER_U) bulktherin
-         WRITE(UNIT=FRAC_U) frac
-         WRITE(UNIT=TIMES_U) times
+         WRITE(UNIT=ASSEMBL_U) TRIM(assemblBuff)
+         WRITE(UNIT=BULK_U) TRIM(bulkBuff)
+         WRITE(UNIT=BTAB_U) TRIM(bulktableBuff)
+         WRITE(UNIT=BTHER_U) TRIM(bulktherinBuff)
+         WRITE(UNIT=FRAC_U) TRIM(fracBuff)
+         WRITE(UNIT=TIMES_U) TRIM(timesBuff)
+         WRITE(UNIT=TAB_U) TRIM(tabBuff)
+         WRITE(UNIT=TCP_U) TRIM(tcpBuff)
 
          CLOSE(UNIT=ASSEMBL_U)
          CLOSE(UNIT=BULK_U)
@@ -2473,10 +2477,14 @@ MODULE theriag_mod
          CLOSE(UNIT=BTHER_U)
          CLOSE(UNIT=FRAC_U)
          CLOSE(UNIT=TIMES_U)
+         CLOSE(UNIT=TAB_U)
+         CLOSE(UNIT=TCP_U)
+
          DO I=1,LEN(garnet_gens)
+            !Change this to stop once it reaches the end of the data
             WRITE (UNIT=FINA2,FMT='(''garnet_gen'',I3.3,''a.txt'')') I
             OPEN(UNIT=GENS_U, FILE=FINA2)
-            WRITE(UNIT=GENS_U) garnet_gens(I)
+            WRITE(UNIT=GENS_U) TRIM(garnet_gens(I))
             CLOSE(UNIT=GENS_U)
          ENDDO
 
@@ -2509,6 +2517,7 @@ MODULE theriag_mod
 !-----
       INTEGER*4 MAXLAY,MAXGEN
       PARAMETER (MAXLAY=400,maxgen=50)
+
 !-----END OF COMMON VARIABLES
       REAL*8 VOL1M(MAXGEN),GARNET(MAXGEN,4,MAXLAY),VLAY(MAXGEN,MAXLAY), &
       DLAY(MAXGEN,MAXLAY),XLAY(MAXGEN,MAXLAY),MOLAY(MAXGEN,MAXLAY), &
@@ -2548,6 +2557,8 @@ MODULE theriag_mod
       INTEGER*4 I,IG,I1
       REAL*8 TIMTOT
 !-----
+      CHARACTER(LEN=1000) :: nextLine
+      
 !=====
 !      DO 400,IG=1,NGEN
 !=====
@@ -2568,34 +2579,29 @@ MODULE theriag_mod
 !      WRITE (43,3006) TC,P,(CHEM(I),I=1,NC)
 ! 3006 FORMAT ('0  ',100(2X,1PE15.8))
 !=====
+      !PRINT *, "NLAY =",NLAY(1)
       IF (NLAY(1).EQ.1) THEN
       !OPEN (UNIT=54,FILE='garnet_frac.txt',STATUS='UNKNOWN')
-      WRITE (frac,1000)
- 1000 FORMAT ('-----------------------------------------------', &
-      '-----------------------------------------------', &
-      '----------------------'/ &
-      'THERIA_G - Compositional profile of the first generation', &
-      ' garnet considering chemical fractionation. However, the'/ &
-      'bulk composition may be modified by internal metasomatism', &
-      ' (Spear, 1988) depending on the effectiveness of diffusion.'/ &
-      'Pressure, Temperature, Time  and assemblage are for initial ', &
-      'growth.'/ &
-      '-----------------------------------------------', &
-      '-----------------------------------------------', &
-      '----------------------'/ &
-      'shell',2X,'temperature (¡C)',1X,'pressure (bar)', &
-      3X,'time (my)',8X,'radius (cm)',6X,'Xmn',14X,'Xfe',14X,'Xmg', &
-      14X,'Xca',14X,'assemblage')
+         WRITE (nextLine,1000)
+    1000 FORMAT ('shell',2X,'temperature (¡C)',1X,'pressure (bar)', &
+         3X,'time (my)',8X,'radius (cm)',6X,'Xmn',14X,'Xfe',14X,'Xmg', &
+         14X,'Xca',14X,'assemblage')
+         nextLine = TRIM(nextLine)//NEW_LINE('A')
+         fracBuff = nextLine
       !ELSE
       !OPEN (UNIT=54,FILE='garnet_frac.txt',STATUS='OLD',ACCESS='APPEND')
-      !END IF
+      END IF
       CALL LABLA(CURAS,I1)
-      WRITE (frac,1005) NLAY(1),TC,P,TIMTOT,XLAY(1,NLAY(1))/10000, &
+      WRITE (nextLine,1005) NLAY(1),TC,P,TIMTOT,XLAY(1,NLAY(1))/10000, &
       GARNET(1,1,NLAY(1))/100,GARNET(1,2,NLAY(1))/100, &
       GARNET(1,3,NLAY(1))/100,GARNET(1,4,NLAY(1))/100,CURAS(1:I1)
  1005 FORMAT (I4,8(2X,1PE15.8),3X,A)
+      nextLine = TRIM(nextLine)//NEW_LINE('A')
+      !PRINT *, TRIM(nextLine)
+      fracBuff = TRIM(fracBuff)//TRIM(nextLine)
       !CLOSE (UNIT=54)
 !----
+      !PRINT *, TRIM(fracBuff)
       RETURN
       END
 !-----
@@ -3207,6 +3213,8 @@ MODULE theriag_mod
       INTEGER*4 I,II,I1,IP,IL,I2
       CHARACTER*16 TEXT
 !-----
+      CHARACTER(LEN=1000) :: nextLine
+
       IF (LOO1.GE.LO1MAX) THEN
       PRTLOG(6)=.TRUE.
       CALL PRTCAL
@@ -3240,7 +3248,9 @@ MODULE theriag_mod
         CURASNR=NCURAS
         !OPEN (UNIT=50,FILE='garnet_assembl.txt',STATUS='UNKNOWN')
         DO II=1,NCURAS
-         WRITE (assembl,FMT='(I4,2X,A)') II,CURASSES(II)
+         WRITE (nextLine,FMT='(I4,2X,A)') II,CURASSES(II)
+         nextLine = TRIM(nextLine)//NEW_LINE('A')
+         assemblBuff = TRIM(assemblBuff)//TRIM(nextLine)
         END DO
         !CLOSE (UNIT=50)
        ELSE

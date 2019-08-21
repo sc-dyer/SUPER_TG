@@ -3597,7 +3597,8 @@
       RETURN
       END
 !********************************
-      SUBROUTINE PRTTBL
+      SUBROUTINE PRTTBL(tabBuffIn,tcpBuffIn)
+      !Modified to write to buffers that are used as input
       IMPLICIT NONE
       INCLUDE 'theriak.cmn'
       include 'files.cmn'
@@ -3605,6 +3606,9 @@
 !-----
       INTEGER*4 II,IB,I0,I1,I2,ierr,j
       CHARACTER*500 CH500
+
+      CHARACTER(LEN=100000000) :: tabBuffIn,tcpBuffIn
+      CHARACTER(LEN=100000) :: nextLine
 !     CHARACTER*1 TCH
 !-----TCH is the tab character
 !     CH=CHAR(9)
@@ -3617,21 +3621,28 @@
       akzess=' '
       state=' '
       ierr=0
-      call openfile(j,ierr)
-      if(ierr.ne.0) STOP
+     ! call openfile(j,ierr)
+      !if(ierr.ne.0) STOP
 !-----
-      WRITE (tab,1000) (VARTBL(II),II=1,NVARTBL)
+      WRITE (nextLine,1000) (VARTBL(II),II=1,NVARTBL)
  1000 FORMAT (500(A32,:,','))
-!-
+
+      nextLine = TRIM(nextLine)//NEW_LINE('A')
+      tabBuffIn = TRIM(tabBuffIn)//TRIM(nextLine)
+!-    
       WRITE (6,1002) NVARTBL,NROWTBL
    !   WRITE (out,1002) NVARTBL,NROWTBL
  1002 FORMAT (' columns =',I5,2X,'rows =',I5)
 !-
       DO 500,IB=1,NROWTBL
-      WRITE (tab,1010) (OUTTBL(IB,II),II=1,NVARTBL)
+      WRITE (nextLine,1010) (OUTTBL(IB,II),II=1,NVARTBL)
  1010 FORMAT (500(1PE14.7,:,','))
+
+      nextLine = TRIM(nextLine)//NEW_LINE('A')
+      tabBuffIn = TRIM(tabBuffIn)//TRIM(nextLine)
+
   500 CONTINUE
-      CLOSE (UNIT=tab)
+      !CLOSE (UNIT=tab)
 !------------------
 !     Open UNIT=tcp
 !------------------
@@ -3641,10 +3652,14 @@
       akzess=' '
       state=' '
       ierr=0
-      call openfile(j,ierr)
-      if(ierr.ne.0) STOP
+      !call openfile(j,ierr)
+      !if(ierr.ne.0) STOP
 !-----
-      WRITE (tcp, '(a)') 'TITLE = "PT LOOP"'
+      WRITE (nextLine, '(a)') 'TITLE = "PT LOOP"'
+
+      nextLine = TRIM(nextLine)//NEW_LINE('A')
+      tcpBuffIn = TRIM(tcpBuffIn)//TRIM(nextLine)
+
       CH500='VARIABLES = '
       I0=13
       DO 502 I1=1,NVARTBL
@@ -3652,19 +3667,25 @@
       CH500(I0:)='"'//VARTBL(I1)(1:I2)//'",'
       I0=I0+I2+3
       IF (I0.GT.200) THEN
-      CALL PUST(tcp,CH500)
+      CALL PUST_Buff(tcpBuffIn,CH500)
       CH500=' '
       I0=1
       END IF
   502 CONTINUE
       IF (I0.GT.1) CH500(I0-1:)=' '
-      CALL PUST(tcp,CH500)
-      WRITE (tcp,*) 'ZONE I=',NROWTBL,', F=POINT'
+      CALL PUST_Buff(tcpBuffIn,CH500)
+      WRITE (nextLine,*) 'ZONE I=',NROWTBL,', F=POINT'
+
+      nextLine = TRIM(nextLine)//NEW_LINE('A')
+      tcpBuffIn = TRIM(tcpBuffIn)//TRIM(nextLine)
+
       DO 501,IB=1,NROWTBL
-      WRITE (tcp,1011) (OUTTBL(IB,II),II=1,NVARTBL)
+      WRITE (nextLine,1011) (OUTTBL(IB,II),II=1,NVARTBL)
  1011 FORMAT (501(1PE16.8))
+      nextLine = TRIM(nextLine)//NEW_LINE('A')
+      tcpBuffIn = TRIM(tcpBuffIn)//TRIM(nextLine)
   501 CONTINUE
-      CLOSE (UNIT=tcp)
+      !CLOSE (UNIT=tcp)
 !-----
       RETURN
       END
