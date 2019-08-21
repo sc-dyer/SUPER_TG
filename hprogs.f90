@@ -14,6 +14,53 @@
 !          CH-4056 BASEL
 !
 !
+!My own functions here:
+SUBROUTINE writeBuff(lineIn, buffIn)
+   !Another subroutine to make the buffer sizes dynamic
+   !Will make a new CHARACTER that is the size of buffIn + lineIn and concatenate lineIn to buffIn
+   !Then reallocates buffIn to be the same size as the tempBuff and copy the contents
+   CHARACTER(LEN=*), INTENT(IN) :: lineIn
+   CHARACTER(LEN=:),ALLOCATABLE :: buffIn, tempBuff, tempLine
+   
+   INTEGER :: buffLen, lineLen
+
+   lineLen = LEN(lineIn)
+   ALLOCATE(CHARACTER(LEN=lineLen) :: tempLine)
+   tempLine = TRIM(lineIn)
+   
+   IF(ALLOCATED(buffIn)) THEN
+      !Runs if buffIn is already written to
+      buffLen = LEN(buffIn) + LEN(tempLine)
+      ALLOCATE(CHARACTER(LEN=buffLen) :: tempBuff)
+      tempBuff = buffIn//tempLine
+      ALLOCATE(CHARACTER(LEN=buffLen) :: buffIn)
+      buffIn = tempBuff
+   ELSE
+      !Runs if first allocation of buffIn
+      buffLen = LEN(tempLine)
+      ALLOCATE(CHARACTER(LEN=buffLen) :: buffIn)            
+      buffIn = tempLine
+   ENDIF
+
+END SUBROUTINE writeBuff
+
+SUBROUTINE PUST_Buff(buffer,CH)
+      !Calls labla to find last non-space  then writes to buffer between the from the beginning of CH to the first space
+      !Just realized this is basically the TRIM command, leaving this in just in case there is weirdness
+      IMPLICIT NONE
+      CHARACTER*(*) CH, buffer
+      INTEGER*4 II
+      CHARACTER(LEN=1000) :: nextLine
+
+      CALL LABLA(CH,II)
+      IF (II.EQ.0) II=1
+      WRITE (nextLine,FMT='(A)') CH(1:II)
+      nextLine = TRIM(nextLine)//NEW_LINE('A')
+      buffer = TRIM(buffer)//TRIM(nextLine)
+      RETURN
+END SUBROUTINE PUST_Buff
+
+
       SUBROUTINE FIBLA(CH,II)
          !Finds the first character that isn't ' ' in CHARACTER CH
          !Returns index II, returns 0 if there are isnt any
@@ -55,21 +102,7 @@
       END
 
       !This is my own change 
-      SUBROUTINE PUST_Buff(buffer,CH)
-         !Calls labla to find last non-space  then writes to buffer between the from the beginning of CH to the first space
-         !Just realized this is basically the TRIM command, leaving this in just in case there is weirdness
-         IMPLICIT NONE
-         CHARACTER*(*) CH, buffer
-         INTEGER*4 II
-         CHARACTER(LEN=1000) :: nextLine
-
-         CALL LABLA(CH,II)
-         IF (II.EQ.0) II=1
-         WRITE (nextLine,FMT='(A)') CH(1:II)
-         nextLine = TRIM(nextLine)//NEW_LINE('A')
-         buffer = TRIM(buffer)//TRIM(nextLine)
-         RETURN
-      END SUBROUTINE
+     
 !-----
 !******************************
       SUBROUTINE PUSTCOL(I001,CH,COL1,COL2)

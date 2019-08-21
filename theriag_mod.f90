@@ -41,7 +41,7 @@ MODULE theriag_mod
 
       CHARACTER(LEN=:),ALLOCATABLE ::   csd_file, dif_file
       REAL(KIND=8), DIMENSION(:),ALLOCATABLE :: p_list,tem_list,time_list
-      CHARACTER(LEN=1000000) :: fracBuff, bulkBuff, bulktableBuff, bulktherinBuff,  assemblBuff, timesBuff !THERIA_G text buffers to wait for output to be written
+      CHARACTER(LEN=:),ALLOCATABLE :: fracBuff, bulkBuff, bulktableBuff, bulktherinBuff,  assemblBuff, timesBuff !THERIA_G text buffers to wait for output to be written
       CHARACTER(LEN=100000000),DIMENSION(40) :: garnet_gens !Array of text buffers for the garnet generations
       CHARACTER(LEN=100000000) :: tabBuff,tcpBuff
       PUBLIC :: run_theriag
@@ -2279,10 +2279,16 @@ MODULE theriag_mod
        I1=I1+16
       END DO
       WRITE (UNIT=BUNA4(I1:),FMT='(''  ,assemblage'')')
-      CALL PUST_Buff(bulkBuff,BUNA)
-      CALL PUST_Buff(bulktableBuff,BUNA2)
-      CALL PUST_Buff(bulktherinBuff,BUNA4)
-!--
+      BUNA = TRIM(BUNA)//NEW_LINE('A')
+      BUNA2 = TRIM(BUNA2)//NEW_LINE('A')
+      BUNA4 = TRIM(BUNA4)//NEW_LINE('A')
+      !CALL PUST_Buff(bulkBuff,BUNA)
+      !CALL PUST_Buff(bulktableBuff,BUNA2)
+      !CALL PUST_Buff(bulktherinBuff,BUNA4)
+      CALL writeBuff(BUNA,bulkBuff)
+      CALL writeBuff(BUNA2,bulktableBuff)
+      CALL writeBuff(BUNA4, bulktherinBuff)
+!--   
       WRITE (UNIT=BUNA,FMT='(A)') ' initial'
       WRITE (UNIT=BUNA2,FMT='(A)') '-1D-10'
       WRITE (UNIT=BUNA4,FMT='(1PE15.8)') TIMTOT
@@ -2314,12 +2320,20 @@ MODULE theriag_mod
 
       END DO
       WRITE (UNIT=BUNA4(I1:),FMT='(''  ,'',I4)') CURASNR
-      CALL PUST_Buff(bulkBuff,BUNA)
-      CALL PUST_Buff(bulktableBuff,BUNA2)
+      BUNA = TRIM(BUNA)//NEW_LINE('A')
+      BUNA2 = TRIM(BUNA2)//NEW_LINE('A')
+      !CALL PUST_Buff(bulkBuff,BUNA)
+      !CALL PUST_Buff(bulktableBuff,BUNA2)
+      CALL writeBuff(BUNA,bulkBuff)
+      CALL writeBuff(BUNA2,bulktableBuff)
+      
       CALL KOLLABIERE(ZTHERIN,J)
       BUNA3='-1.00000000D-10  '//ZTHERIN(1:J)//'    *'
-      CALL PUST_Buff(bulktherinBuff,BUNA3)
-      CALL PUST_Buff(timesBuff,BUNA4)
+      BUNA3 = TRIM(BUNA3)//NEW_LINE('A')
+      !CALL PUST_Buff(bulktherinBuff,BUNA3)
+      !CALL PUST_Buff(timesBuff,BUNA4)
+      CALL writeBuff(BUNA3, bulktherinBuff)
+      
 !----
       ELSE
       !OPEN (UNIT=43,FILE='garnet_bulk.txt',STATUS='OLD', &
@@ -2362,12 +2376,22 @@ MODULE theriag_mod
 
       END DO
       WRITE (UNIT=BUNA4(I1:),FMT='(''  ,'',I4)') CURASNR
-      CALL PUST_Buff(bulkBuff,BUNA)
-      CALL PUST_Buff(bulktableBuff,BUNA2)
+      BUNA = TRIM(BUNA)//NEW_LINE('A')
+      BUNA2 = TRIM(BUNA2)//NEW_LINE('A')
+
+      !CALL PUST_Buff(bulkBuff,BUNA)
+      !CALL PUST_Buff(bulktableBuff,BUNA2)
+      CALL writeBuff(BUNA, bulkBuff)
+      CALL writeBuff(BUNA2, bulktableBuff)
       CALL KOLLABIERE(ZTHERIN,J)
       BUNA3=BUNA2(1:17)//ZTHERIN(1:J)//'    *'
-      CALL PUST_Buff(bulktherinBuff,BUNA3)
-      CALL PUST_Buff(timesBuff,BUNA4)
+      BUNA3 = TRIM(BUNA3)//NEW_LINE('A')
+      BUNA4 = TRIM(BUNA4)//NEW_LINE('A')
+
+      !CALL PUST_Buff(bulktherinBuff,BUNA3)
+      !CALL PUST_Buff(timesBuff,BUNA4)
+      CALL writeBuff(BUNA3, bulktherinBuff)
+      CALL writeBuff(BUNA4, timesBuff)
 !----
       END IF
       !CLOSE (UNIT=43)
@@ -2462,14 +2486,17 @@ MODULE theriag_mod
          OPEN(UNIT=TAB_U, FILE=TAB_F)
          OPEN(UNIT=TCP_U, FILE=TCP_F)
 
-         WRITE(UNIT=ASSEMBL_U) TRIM(assemblBuff)
-         WRITE(UNIT=BULK_U) TRIM(bulkBuff)
-         WRITE(UNIT=BTAB_U) TRIM(bulktableBuff)
-         WRITE(UNIT=BTHER_U) TRIM(bulktherinBuff)
-         WRITE(UNIT=FRAC_U) TRIM(fracBuff)
-         WRITE(UNIT=TIMES_U) TRIM(timesBuff)
-         WRITE(UNIT=TAB_U) TRIM(tabBuff)
-         WRITE(UNIT=TCP_U) TRIM(tcpBuff)
+         WRITE(UNIT=ASSEMBL_U,FMT='(A)') TRIM(assemblBuff)
+         WRITE(UNIT=BULK_U,FMT='(A)') TRIM(bulkBuff)
+         WRITE(UNIT=BTAB_U,FMT='(A)') TRIM(bulktableBuff)
+         WRITE(UNIT=BTHER_U,FMT='(A)') TRIM(bulktherinBuff)
+         WRITE(UNIT=FRAC_U,FMT='(A)') TRIM(fracBuff)
+         WRITE(UNIT=TIMES_U,FMT='(A)') TRIM(timesBuff)
+         WRITE(UNIT=TAB_U,FMT='(A)') TRIM(tabBuff)
+         WRITE(UNIT=TCP_U,FMT='(A)') TRIM(tcpBuff)
+
+         PRINT*, assemblBuff
+         PRINT*, bulkBuff
 
          CLOSE(UNIT=ASSEMBL_U)
          CLOSE(UNIT=BULK_U)
@@ -2484,11 +2511,13 @@ MODULE theriag_mod
             !Change this to stop once it reaches the end of the data
             WRITE (UNIT=FINA2,FMT='(''garnet_gen'',I3.3,''a.txt'')') I
             OPEN(UNIT=GENS_U, FILE=FINA2)
-            WRITE(UNIT=GENS_U) TRIM(garnet_gens(I))
+            WRITE(UNIT=GENS_U, FMT='(A)') TRIM(garnet_gens(I))
             CLOSE(UNIT=GENS_U)
          ENDDO
 
       END SUBROUTINE printBuff
+
+      
 !-----
 !******************************
       SUBROUTINE KOLLABIERE(CH,J)
@@ -2587,7 +2616,7 @@ MODULE theriag_mod
          3X,'time (my)',8X,'radius (cm)',6X,'Xmn',14X,'Xfe',14X,'Xmg', &
          14X,'Xca',14X,'assemblage')
          nextLine = TRIM(nextLine)//NEW_LINE('A')
-         fracBuff = nextLine
+         CALL writeBuff(nextLine,fracBuff)
       !ELSE
       !OPEN (UNIT=54,FILE='garnet_frac.txt',STATUS='OLD',ACCESS='APPEND')
       END IF
@@ -2598,7 +2627,7 @@ MODULE theriag_mod
  1005 FORMAT (I4,8(2X,1PE15.8),3X,A)
       nextLine = TRIM(nextLine)//NEW_LINE('A')
       !PRINT *, TRIM(nextLine)
-      fracBuff = TRIM(fracBuff)//TRIM(nextLine)
+      CALL writeBuff(nextLine,fracBuff)
       !CLOSE (UNIT=54)
 !----
       !PRINT *, TRIM(fracBuff)
@@ -3250,7 +3279,7 @@ MODULE theriag_mod
         DO II=1,NCURAS
          WRITE (nextLine,FMT='(I4,2X,A)') II,CURASSES(II)
          nextLine = TRIM(nextLine)//NEW_LINE('A')
-         assemblBuff = TRIM(assemblBuff)//TRIM(nextLine)
+         CALL writeBuff(nextLine, assemblBuff)
         END DO
         !CLOSE (UNIT=50)
        ELSE
