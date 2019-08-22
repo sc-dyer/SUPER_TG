@@ -1027,7 +1027,9 @@ MODULE theriag_mod
                TSEG(i) = tem_list(i)
                PSEG(i) = p_list(i)
                TIMSEG(i) = time_list(i)
+               NSEG = NSEG+1
                WRITE (scr,1016) TSEG(i),PSEG(i),TIMSEG(i)
+               1016 FORMAT (13X,F10.4,2X,F10.2,2X,F10.5)
             END DO
 
          ELSE
@@ -1453,10 +1455,13 @@ MODULE theriag_mod
 !mar2015
       WRITE(UNIT=6,FMT='(''enter NEXTSTEP'')')
  !     WRITE(UNIT=10,FMT='(''enter NEXTSTEP'')')
-
-      IF (TX.EQ.TSEG(SEGM+1).AND.PX.EQ.PSEG(SEGM+1)) THEN
-      SEGM=SEGM+1
-      IF (SEGM.GT.NSEG-1) FER=1
+      
+      !Changed from .EQ. to .GT. because of rounding errors, I think in theory this shouldnt be a problem but
+      !Might want to consider rounding, actually need to round because of retrograde RIP 
+      !Might want to try epsilon but this should work
+      IF (ABS(TX-TSEG(SEGM+1))<0.00001 .AND. ABS(PX-PSEG(SEGM+1))<0.00001) THEN
+         SEGM=SEGM+1
+         IF (SEGM.GT.NSEG-1) FER=1
       END IF
 !----
       F1=TSEG(SEGM+1)-TSEG(SEGM)
@@ -2419,7 +2424,7 @@ MODULE theriag_mod
       DO 287,I=1,NNOD(IG)
       FF=XHR(IG,I)+DRVHR(IG,I)/2.0D0
       !WRITE (53,1005) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
-      VFE(IG,I)/100.0D0,VMG(IG,I)/100.0D0,VCA(IG,I)/100.0D0
+      !VFE(IG,I)/100.0D0,VMG(IG,I)/100.0D0,VCA(IG,I)/100.0D0
  1005 FORMAT (2I4,9(2X,1PE15.8))
       WRITE (63,1006) IG,I,TC,P,TIMTOT,FF,XHR(IG,I),VMN(IG,I)/100.0D0, &
       VFE(IG,I)/100.0D0,VMG(IG,I)/100.0D0,VCA(IG,I)/100.0D0, &
