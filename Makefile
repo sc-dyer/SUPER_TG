@@ -2,10 +2,6 @@ PLAT = platf-unix
 OBJECTS = activi.o dasave.o dbread.o fsol.o gcalc.o gmini.o hprogs.o prinin.o prtcal.o help.o $(PLAT).o
 FFLAGS = ifort -O3
 
-##FFLAGS = ifort -O2 -fbounds-check -Wunused
-##FFLAGS = ifort -g -fbacktrace -ffpe-trap=underflow
-
-COMP77 = ifort -O2
 SEX = f90
 
 super_tg : super_tg.o theriag_mod.o 
